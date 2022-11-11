@@ -1,0 +1,36 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "hciparse"
+authors = [
+    {name = "Tomas Nilsson"},
+    {name = "Greg Foringer"},
+]
+readme = "README.md"
+classifiers = [
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Environment :: Console",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    # "Private :: Do Not Upload",
+]
+requires-python = ">=3.5"
+dependencies = [
+    "ConfigParser >= 5.3.0",
+    "prettytable >= 3.5.0",
+]
+# dynamic = ["version","description"]
+version = "1.1" 
+description = "A Python Bluetooth HCI Log Parser"
+
+[project.entry-points."hciparse.bt"]
+[project.entry-points."hciparse.android"]
+[project.entry-points."hciparse.logparse"]
+# [project.entry-points."hciparse.examples.complexExample"]
+
+[project.scripts]
+hciparse = "hciparse.main_cli.CLIhciParseOptions:main_cli"

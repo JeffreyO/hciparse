@@ -3,11 +3,11 @@
 """
 import sys
 import struct
-import hci_uart
-import hci_cmd
-import hci_evt
-import hci_acl
-import hci_sco
+from hciparse.bt import hci_uart
+from hciparse.bt import hci_cmd
+from hciparse.bt import hci_evt
+from hciparse.bt import hci_acl
+from hciparse.bt import hci_sco
 
 
 PKT_TYPE_PARSERS = {hci_uart.HCI_CMD : hci_cmd.parse,

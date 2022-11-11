@@ -1,7 +1,5 @@
 """
   Parse btsnoop or Apple PacketLogger (.pklg) binary data (similar to wireshark)
-  usage:
-     ./parse.py <filename>
 """
 import datetime
 import sys
@@ -54,34 +52,34 @@ def parse(filename):
     * timestamp
     * data
     """
-    with open(filename, "rb") as f:
+    # with open(filename, "rb") as f:
+    f = open(filename, "rb")
 
-        # Read file header
-        (identification, version, type) = _read_file_header(f)
-        pklg_version2 = (identification[1] == 0x01)
+    # Read file header
+    (identification, version, type) = _read_file_header(f)
+    pklg_version2 = (identification[1] == 0x01)
 
-        # Check for btsnoop magic, if it doesn't exist, might be PacketLogger
-        # format
-        if identification != "btsnoop\0":
-            # Validate and rewind because PacketLogger files have no file header
-            _validate_is_packetlogger_file(identification)
-            f.seek(0)
-            # NEXT
-            return map(lambda record:
-                (record[0], record[1], record[2], record[3], record[4]),
-                _read_packetlogger_records(f, pklg_version2))
+    # Check for btsnoop magic, if it doesn't exist, might be PacketLogger
+    # format
+    if identification != b"btsnoop\0":
+        # Validate and rewind because PacketLogger files have no file header
+        _validate_is_packetlogger_file(identification)
+        f.seek(0)
+        # NEXT
+        return list(map(lambda record:
+            (record[0], record[1], record[2], record[3], record[4]),
+            _read_packetlogger_records(f, pklg_version2)))
 
-        else:
-            _validate_btsnoop_header(identification, version, type)
+    else:
+        _validate_btsnoop_header(identification, version, type)
 
-            # Not using the following data:
-            # record[1] - original length
-            # record[4] - cumulative drops
-            # seq_nbr, inc_len, flags, time64, data
-            return map(lambda record:
-                (record[0], record[2], record[3], _parse_time(record[5]), record[6]),
-                _read_btsnoop_records(f))
-
+        # Not using the following data:
+        # record[1] - original length
+        # record[4] - cumulative drops
+        # seq_nbr, inc_len, flags, time64, data
+        return list(map(lambda record:
+            (record[0], record[2], record[3], _parse_time(record[5]), record[6]),
+            _read_btsnoop_records(f)))
 
 def _read_file_header(f):
     """
@@ -124,10 +122,10 @@ def _validate_btsnoop_header(identification, version, data_link_type):
     For SWAP, data link type should be:
         HCI UART (H4)	1002
     """
-    assert identification == "btsnoop\0"
+    assert identification == b"btsnoop\0"
     assert version == 1
     assert data_link_type == 1002
-    print "Btsnoop capture file version {0}, type {1}".format(version, data_link_type)
+    print("Btsnoop capture file version {0}, type {1}".format(version, data_link_type))
 
 def _validate_is_packetlogger_file(identification):
     """
@@ -246,31 +244,3 @@ def flags_to_str(flags):
     """
     assert flags in [0,1,2,3]
     return BTSNOOP_FLAGS[flags]
-
-
-def print_hdr():
-    """
-    Print the script header
-    """
-    print ""
-    print "##############################"
-    print "#                            #"
-    print "#    btsnoop parser v0.1     #"
-    print "#                            #"
-    print "##############################"
-    print ""
-
-
-def main(filename):
-    records = parse(filename)
-    print records
-    return 0
-
-
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print __doc__
-        sys.exit(1)
-
-    print_hdr()
-    sys.exit(main(sys.argv[1]))

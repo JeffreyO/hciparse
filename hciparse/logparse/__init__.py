@@ -1,1 +1,1 @@
-from . import logparse
+from hciparse.logparse import logparse

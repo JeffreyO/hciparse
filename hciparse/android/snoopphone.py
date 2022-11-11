@@ -1,8 +1,10 @@
 import os
 import tempfile
-import ConfigParser
+import configparser
+import re
+import base64
 
-from phone import Phone
+from hciparse.android.phone import Phone
 
 
 BTSTACK_CONFIG_FILE = 'bt_stack.conf'
@@ -29,7 +31,7 @@ class SnoopPhone(Phone):
 
         ret = super(SnoopPhone, self).pull(btsnoop_path, dst)
         if ret[0] == 0:
-            print ret[1] + " " + dst 
+            print(ret[1] + " " + dst )
             return dst
         else:
             return None
@@ -63,7 +65,7 @@ class SnoopPhone(Phone):
                     return self.fp.readline()
         
         # Parse key/values
-        parser = ConfigParser.SafeConfigParser()
+        parser = configparser.SafeConfigParser()
         with open(path, 'r') as f:
             parser.readfp(DummyHeaderFile(f))
             return dict(parser.items('dummy'))
@@ -75,3 +77,14 @@ class SnoopPhone(Phone):
             return dst
         else:
             raise ValueError("Failed to pull bt_stack.conf")
+
+    def android12_dumpsys(self):
+        output = shell("dumpsys bluetooth_manager")
+        patternStart = r' bytes in\) ---'
+        patternEnd = '--- END:BTSNOOP_LOG_SUMMARY ---'
+        pattern = patternStart + '([^&]+?)' + patternEnd
+        decodeFile = search(pattern, output).group(1)
+        print(decodeFile)
+        decoded = base64.b64decode(decodeFile)
+        print(decoded)
+        return
